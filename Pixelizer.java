@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
@@ -10,7 +12,7 @@ public class Pixelizer {
 
     }
 
-    public void imageReader(String path){
+    public BufferedImage imageReader(String path){
         try {
             File inputFile = new File(path);
             BufferedImage image = ImageIO.read(inputFile);
@@ -18,9 +20,10 @@ public class Pixelizer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return this.ogImage;
     }
 
-    public void imageConverter(int stepSize){
+    public BufferedImage reduceResolution(int stepSize){
         BufferedImage newImage = new BufferedImage(this.ogImage.getWidth()/stepSize, this.ogImage.getHeight()/stepSize, BufferedImage.TYPE_INT_RGB);
         for(int y=stepSize-1;y<this.ogImage.getHeight();y+=stepSize){
             for(int x=stepSize-1;x<this.ogImage.getWidth();x+=stepSize){ 
@@ -44,19 +47,28 @@ public class Pixelizer {
                 int rgbValue = (a << 24) | (r << 16) | (g << 8) | b;
                 newImage.setRGB(x/(stepSize), y/(stepSize), rgbValue);
             }
-        }
+        }  
+        return newImage;
+    }
+
+    public void imageToPNG(BufferedImage image){
         try{
             File outputFile = new File("output.png");
-            ImageIO.write(newImage,"PNG",outputFile);
+            ImageIO.write(image,"PNG",outputFile);
 
         }catch(IOException e){
             System.out.println("error saving to file");
         }
     }
 
+    public BufferedImage toBlackAndWhite(BufferedImage image){
+        return image;
+    }
+    
     public static void main(String[] args){
         Pixelizer pixelizer=new Pixelizer();
         pixelizer.imageReader("testImage.jpg");
-        pixelizer.imageConverter(Integer.parseInt(args[0]));
+        BufferedImage image =pixelizer.reduceResolution(Integer.parseInt(args[0]));
+        pixelizer.imageToPNG(image);
     }
 }
